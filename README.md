@@ -1,7 +1,7 @@
-# Tabemaru Control Board V1
+# Tabemaru Control Board
 
 ## Overview
-This repository contains the firmware (`tabemaru-V5-verbose.ino`) and documentation for the **Tabemaru Control Board V1**. The system is built around an Arduino Mega 2560 architecture (specifically using an Anycubic Trigorilla motherboard) combined with a custom PCB designed by Benjamin Chabaud Baldacci at the DLX Design Lab.
+This repository contains the firmware (`tabemaru-V5-verbose.ino`) and documentation for the **Tabemaru Control Board**. The system is built around an Arduino Mega 2560 architecture (specifically using an Anycubic Trigorilla motherboard) combined with a custom PCB.
 
 The system is designed to automate a sequence involving valves, a motor, and a heated bed, while continuously logging environmental data (temperature and humidity) to both a Serial Monitor and an SD Card in a non-blocking manner.
 
@@ -34,7 +34,7 @@ The system logs data in CSV format. It features a robust **Hot-Swap background t
 
 ## Custom PCB Analysis (KiCad)
 
-Based on the provided KiCad schematic and PCB layout files, the custom "Tabemaru control board V1" acts as an intermediate shield/routing board that neatly bridges the Trigorilla motherboard with the external peripherals.
+The custom "Tabemaru control board" acts as an intermediate shield/routing board that neatly bridges the Trigorilla motherboard with the external peripherals, and also acts as a Human-Machine Interface (HMI).
 
 ### Schematic Details
 1.  **I2C Multiplexer (TCA9548A):**
@@ -46,13 +46,13 @@ Based on the provided KiCad schematic and PCB layout files, the custom "Tabemaru
 3.  **Trigorilla Interconnect (`J4`):**
     *   This 6-pin connector bridges the custom PCB back to the main Trigorilla board. It carries the primary I2C bus (`sda`, `scl`), Ground, VCC, and the two button signals (`bp1`, `bp2`).
 4.  **OLED Screen Header (`J5`):**
-    *   This 10-pin header routes `VCC`, `GND`, `sda`, and `scl` directly to the OLED screen. Interestingly, the schematic notes that `sc1` and `sd1` are connected just to physically route them through the connector (likely for structural mounting of the screen), though they are not utilized by the screen itself.
+    *   This 10-pin header routes `VCC`, `GND`, `sda`, and `scl` directly to the OLED screen. Notes indicate that `sc1` and `sd1` are connected just to physically route them through the connector, though they are not utilized by the screen itself.
 5.  **User Inputs (Buttons):**
     *   `SW1` and `SW2` are tactile push buttons that pull the `bp1` and `bp2` lines to Ground when pressed. These correspond to the X- and Z- endstop logic in the code.
 6.  **Power Delivery & Decoupling:**
     *   Capacitors `C1`, `C2`, `C3`, `C4` are placed across the VCC and GND lines to stabilize the power delivery to the sensors and ICs, preventing voltage drops and filtering out electrical noise.
 
 ### PCB Layout Notes
-*   The PCB is a two-layer board (Top Copper in Red, Bottom Copper in Blue).
+*   The PCB is a two-layer board (Top Copper in Red, Bottom Copper in Blue). Both sides are identical and interconnected so that the connectors can be mounted on either side depending on the final position of the board inside the composter. Although this makes the routing technically less optimized (for instance, a VCC line making a half-loop is not ideal), it provides necessary mechanical flexibility for prototyping.
 *   Thick traces are used for the main VCC and GND rails to ensure stable current delivery, while thinner traces are used for data lines (`sda`, `scl`).
 *   The design elegantly centralizes all messy external wiring (buttons, screen, sensors) into a single, clean interface board that connects directly to the Trigorilla via the `J4` header.
