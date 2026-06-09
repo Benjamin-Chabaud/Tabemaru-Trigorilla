@@ -22,8 +22,28 @@ To ensure zero-latency responsiveness, the physical buttons do not use standard 
 *   **X- Button (Sequence Start/Stop):** Reacts instantly to start the sequence or act as an emergency stop.
 *   **Z- Button (LED / SD Eject):** A short press toggles the internal LED. Holding the button for 1.5 seconds safely ejects the SD card (suspends writing) or remounts it.
 
-### 3. SD Card & Hot-Swap
+### 3. SD Card & Data Storage
 The system logs data in CSV format. It features a robust **Hot-Swap background task**. If the SD card is removed (or communication fails due to interference), the system will safely catch the error and attempt to re-initialize the SD card every 10 seconds. When the card is reinserted, data logging resumes automatically.
+
+**SD Card Requirements & Formatting:**
+For the SD card module to work reliably with the Arduino architecture, the following requirements MUST be met:
+*   **Capacity:** 8GB is highly recommended for maximum stability (though up to 32GB SDHC is technically supported). SDXC cards (64GB+) will not work.
+*   **File System:** The card MUST be formatted in **FAT32** (or FAT16). exFAT, NTFS, or APFS are not supported by the standard Arduino library.
+*   **Formatting Tool & Deep Reset:** It is strongly advised to use the official SD Association's *SD Memory Card Formatter*. If the Arduino fails to initialize the card, a standard "Quick Format" is often not enough. You must select **"Overwrite Format"** (Full Format) to completely wipe the flash memory sectors and rebuild the file system from scratch.
+*   **Partition Scheme:** The card's partition map MUST be **MBR (Master Boot Record)**. If the card was previously formatted on a Mac or newer OS as GPT (GUID Partition Table), the Arduino will fail to read it. To fix this, the partition table must be completely wiped (e.g., using `diskpart > clean` on Windows) before reformatting to FAT32.
+*   **File Naming:** The system writes to `LOG.CSV`, strictly adhering to the legacy 8.3 filename convention.
+
+**Data Storage Capacity & Retention:**
+At the current logging rate (one entry every 2 seconds), the system generates approximately 1.2 GB of CSV data per year of continuous 24/7 operation. An 8GB SD card (the recommended maximum size for optimal compatibility) can hold data for **over 5 years** before running out of space. 
+
+Depending on your operational needs, you can either:
+*   Safely eject the SD card every few years to manually archive and delete the data.
+*   Modify the logging function in the firmware to implement a rolling log (automatically deleting the oldest data when space runs out).
+
+**Hardware & Operational Recommendations:**
+*   **Logic Level Shifting:** The Arduino outputs 5V logic, but SD cards strictly require 3.3V. Ensure your SD card reader module has a built-in logic level converter chip and a 3.3V voltage regulator. Direct 5V connections will damage the SD card and cause instability.
+*   **Cable Length & Interference:** The SPI protocol is highly susceptible to electromagnetic interference (EMI). Keep the SPI cables (MISO, MOSI, SCK) as short as possible and route them away from high-power cables (like the hotbed heater or motor).
+*   **Flash Wear-Leveling:** Since the system writes data continuously (24/7), standard consumer SD cards may suffer from premature flash memory degradation. It is highly recommended to use a **"High Endurance"** SD card (typically used for dashcams or security cameras) designed for continuous write operations.
 
 ### 4. Environmental Monitoring & Thermostat
 *   **DHT20 Sensors:** Two I2C temperature/humidity sensors are routed through a **TCA9548A Multiplexer**. They are polled every 2 seconds.
